@@ -5,9 +5,14 @@ import json
 import random
 from PyQt5 import QtWidgets
 
+
+def resource_root() -> str:
+    """Return folder containing resources, compatible with PyInstaller."""
+    return getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+
 # -- Configuration --
 # Resources directory (where images.json and image files live)
-RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
+RESOURCES_DIR = os.path.join(resource_root(), 'resources')
 # Path to JSON file listing image paths (one array of strings)
 CONFIG_FILE = os.path.join(RESOURCES_DIR, 'images.json')
 

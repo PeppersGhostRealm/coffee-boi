@@ -23,20 +23,25 @@ STOP_EVENT = threading.Event()
 
 def run_both_scripts():
     """Launch both scripts in parallel and wait for them to finish."""
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    scripts = ["random_notify.py", "random_popup.py"]
+    base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    scripts = ["random_notify", "random_popup"]
     procs = []
 
-    for script in scripts:
-        path = os.path.join(script_dir, script)
-        if not os.path.exists(path):
-            print(f"[Error] Script not found: {path}", file=sys.stderr)
+    for name in scripts:
+        exe = os.path.join(base_dir, name + (".exe" if os.name == "nt" else ""))
+        script = os.path.join(base_dir, name + ".py")
+        if os.path.exists(exe):
+            cmd = [exe]
+        elif os.path.exists(script):
+            cmd = [sys.executable, script]
+        else:
+            print(f"[Error] Script not found: {name}", file=sys.stderr)
             continue
         try:
-            proc = subprocess.Popen([sys.executable, path])
+            proc = subprocess.Popen(cmd)
             procs.append(proc)
         except Exception as e:
-            print(f"[Error] Failed to start {script}: {e}", file=sys.stderr)
+            print(f"[Error] Failed to start {name}: {e}", file=sys.stderr)
 
     for proc in procs:
         proc.wait()
@@ -59,8 +64,8 @@ def on_exit(icon, item):
 
 def create_tray_icon():
     """Set up system tray icon with an Exit menu."""
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    icon_path = os.path.join(script_dir, "icon.ico")
+    base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    icon_path = os.path.join(base_dir, "icon.ico")
     if not os.path.exists(icon_path):
         # Fallback: generate a simple blank image
         img = Image.new("RGB", (64, 64), color=(0, 0, 0))

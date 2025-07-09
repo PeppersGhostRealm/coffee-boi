@@ -5,15 +5,20 @@ import subprocess
 import sys
 import os
 
+
+def resource_path(relative: str) -> str:
+    """Return absolute path to resource, compatible with PyInstaller."""
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, relative)
+
 def main():
     # Only run on Windows
     if sys.platform != "win32":
         print("This script only works on Windows.", file=sys.stderr)
         sys.exit(1)
 
-    # Locate JSON file alongside this script
-    base = os.path.dirname(os.path.realpath(__file__))
-    json_path = os.path.join(base, "resources/notifications.json")
+    # Locate JSON file alongside this script (handles PyInstaller)
+    json_path = resource_path("resources/notifications.json")
 
     # Load titles and messages
     try:
@@ -33,13 +38,18 @@ def main():
     title = random.choice(titles)
     message = random.choice(messages)
 
-    # Call notify.py (make sure it's named/located correctly)
-    notify_script = os.path.join(base, "notify.py")
+    # Call notify.py/notify.exe from the same directory
+    base_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    exe_path = os.path.join(base_dir, "notify.exe") if os.name == "nt" else None
+    script_path = os.path.join(base_dir, "notify.py")
+
+    if exe_path and os.path.exists(exe_path):
+        cmd = [exe_path, title, message]
+    else:
+        cmd = [sys.executable, script_path, title, message]
+
     try:
-        subprocess.run(
-            [sys.executable, notify_script, title, message],
-            check=True
-        )
+        subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Failed to send notification: {e}", file=sys.stderr)
         sys.exit(1)

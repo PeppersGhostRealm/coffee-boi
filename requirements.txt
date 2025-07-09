@@ -1,0 +1,4 @@
+pystray
+pillow
+PyQt5
+win10toast
