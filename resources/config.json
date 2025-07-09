@@ -1,6 +1,8 @@
 {
-  "fade": 1000,
-  "display": 8000,
-  "max_height": 0.3,
+  "min_interval": 300,
+  "max_interval": 600,
+  "fade": 500,
+  "display": 6000,
+  "max_height": 800,
   "anchor": "bottom-right"
 }

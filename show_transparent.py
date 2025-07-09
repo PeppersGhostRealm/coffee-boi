@@ -1,4 +1,3 @@
-# show_transparent.py
 #!/usr/bin/env python3
 import sys
 import ctypes
@@ -8,13 +7,12 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 # Default configuration constants
 FADE_TIME_MS      = 500       # Fade-in/out duration in milliseconds
 DISPLAY_TIME_MS   = 5000      # Time to display fully opaque before fading out
-MAX_HEIGHT_RATIO  = 0.3       # Maximum image height as a fraction of screen height
+MAX_HEIGHT_PX     = 250       # Maximum image height in pixels
 ANCHOR            = 'bottom-right'  # Options: bottom-right, bottom-left, top-right, top-left, center
 MARGIN_X          = 400
 MARGIN_Y          = 0
 POSITION_X        = None      # Override absolute X coordinate
 POSITION_Y        = None      # Override absolute Y coordinate
-
 
 class TransparentPopup(QtWidgets.QWidget):
     def __init__(
@@ -22,7 +20,7 @@ class TransparentPopup(QtWidgets.QWidget):
         image_path,
         fade: int         = None,
         display: int      = None,
-        max_height: float = None,
+        max_height: int   = None,
         anchor: str       = None,
         margin_x: int     = None,
         margin_y: int     = None
@@ -30,10 +28,10 @@ class TransparentPopup(QtWidgets.QWidget):
         super().__init__()
 
         # override module-level defaults if provided
-        global FADE_TIME_MS, DISPLAY_TIME_MS, MAX_HEIGHT_RATIO, ANCHOR, MARGIN_X, MARGIN_Y
+        global FADE_TIME_MS, DISPLAY_TIME_MS, MAX_HEIGHT_PX, ANCHOR, MARGIN_X, MARGIN_Y
         if fade        is not None: FADE_TIME_MS     = fade
         if display     is not None: DISPLAY_TIME_MS  = display
-        if max_height  is not None: MAX_HEIGHT_RATIO = max_height
+        if max_height  is not None: MAX_HEIGHT_PX    = max_height
         if anchor      is not None: ANCHOR           = anchor
         if margin_x    is not None: MARGIN_X         = margin_x
         if margin_y    is not None: MARGIN_Y         = margin_y
@@ -48,7 +46,7 @@ class TransparentPopup(QtWidgets.QWidget):
 
         # Screen geometry & scaled image
         screen = QtWidgets.QApplication.primaryScreen().availableGeometry()
-        max_h_px = int(screen.height() * MAX_HEIGHT_RATIO)
+        max_h_px = MAX_HEIGHT_PX
 
         pixmap = QtGui.QPixmap(image_path)
         if pixmap.isNull():
@@ -127,7 +125,6 @@ class TransparentPopup(QtWidgets.QWidget):
         self.anim.start()
         QtCore.QTimer.singleShot(FADE_TIME_MS, QtWidgets.QApplication.instance().quit)
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Show a transparent popup with CLI-controlled parameters."
@@ -137,8 +134,8 @@ if __name__ == "__main__":
                         help="Fade duration in ms (overrides default)")
     parser.add_argument('--display', type=int, default=None,
                         help="Full-opacity display time in ms")
-    parser.add_argument('--max-height', type=float, default=None,
-                        help="Max image height fraction")
+    parser.add_argument('--max-height', type=int, default=None,
+                        help="Max image height in pixels")
     parser.add_argument('--anchor',
                         choices=['bottom-right','bottom-left','top-right','top-left','center'],
                         default=None, help="Anchor position")

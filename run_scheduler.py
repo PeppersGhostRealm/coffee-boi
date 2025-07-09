@@ -9,13 +9,27 @@ import subprocess
 import sys
 import os
 import threading
+import json
 
 import pystray
 from PIL import Image
 
-# Configuration: minimum and maximum interval between runs (in seconds)
-MIN_INTERVAL = 15  # 5 minutes
-MAX_INTERVAL = 15  # 10 minutes
+# Default configuration: minimum and maximum interval between runs (in seconds)
+DEFAULT_MIN_INTERVAL = 300  # fallback if config load fails
+DEFAULT_MAX_INTERVAL = 600  # fallback if config load fails
+
+# Load interval settings from resources/config.json
+script_dir = os.path.dirname(os.path.realpath(__file__))
+config_path = os.path.join(script_dir, "resources", "config.json")
+try:
+    with open(config_path, 'r', encoding='utf-8') as cfg_file:
+        cfg = json.load(cfg_file)
+        MIN_INTERVAL = float(cfg.get('min_interval', DEFAULT_MIN_INTERVAL))
+        MAX_INTERVAL = float(cfg.get('max_interval', DEFAULT_MAX_INTERVAL))
+except Exception as e:
+    print(f"[Warning] Could not load config.json ({e}); using default intervals.", file=sys.stderr)
+    MIN_INTERVAL = DEFAULT_MIN_INTERVAL
+    MAX_INTERVAL = DEFAULT_MAX_INTERVAL
 
 # Event to signal shutdown
 STOP_EVENT = threading.Event()
@@ -23,7 +37,6 @@ STOP_EVENT = threading.Event()
 
 def run_both_scripts():
     """Launch both scripts in parallel and wait for them to finish."""
-    script_dir = os.path.dirname(os.path.realpath(__file__))
     scripts = ["random_notify.py", "random_popup.py"]
     procs = []
 
@@ -47,7 +60,6 @@ def scheduler_loop():
     while not STOP_EVENT.is_set():
         run_both_scripts()
         interval = random.uniform(MIN_INTERVAL, MAX_INTERVAL)
-        # Wait with possibility to exit early
         STOP_EVENT.wait(interval)
 
 
@@ -59,10 +71,8 @@ def on_exit(icon, item):
 
 def create_tray_icon():
     """Set up system tray icon with an Exit menu."""
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    icon_path = os.path.join(script_dir, "resources/icon.ico")
+    icon_path = os.path.join(script_dir, "resources", "icon.ico")
     if not os.path.exists(icon_path):
-        # Fallback: generate a simple blank image
         img = Image.new("RGB", (64, 64), color=(0, 0, 0))
     else:
         img = Image.open(icon_path)
