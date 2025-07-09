@@ -13,7 +13,7 @@ def main():
 
     # Locate JSON file alongside this script
     base = os.path.dirname(os.path.realpath(__file__))
-    json_path = os.path.join(base, "notifications.json")
+    json_path = os.path.join(base, "resources/notifications.json")
 
     # Load titles and messages
     try:
