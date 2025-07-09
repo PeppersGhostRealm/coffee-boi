@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Tray-based runner script to periodically execute random_notify.py and random_popup.py.
-Run this headless (no console) and you’ll get a tray icon to exit the scheduler.
+Run this headless (no console) and you'll get a tray icon to exit the scheduler.
 """
 import time
 import random
@@ -14,8 +14,8 @@ import pystray
 from PIL import Image
 
 # Configuration: minimum and maximum interval between runs (in seconds)
-MIN_INTERVAL = 6  # 5 minutes
-MAX_INTERVAL = 6  # 10 minutes
+MIN_INTERVAL = 15  # 5 minutes
+MAX_INTERVAL = 15  # 10 minutes
 
 # Event to signal shutdown
 STOP_EVENT = threading.Event()

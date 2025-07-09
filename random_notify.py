@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import json
-import random
+import secrets
 import subprocess
 import sys
 import os
@@ -13,7 +13,7 @@ def main():
 
     # Locate JSON file alongside this script
     base = os.path.dirname(os.path.realpath(__file__))
-    json_path = os.path.join(base, "resources/notifications.json")
+    json_path = os.path.join(base, "resources", "notifications.json")
 
     # Load titles and messages
     try:
@@ -29,9 +29,9 @@ def main():
         print("JSON must contain non-empty 'titles' and 'messages' lists.", file=sys.stderr)
         sys.exit(1)
 
-    # Pick one of each
-    title = random.choice(titles)
-    message = random.choice(messages)
+    # Pick one of each with cryptographically-strong randomness
+    title = secrets.choice(titles)
+    message = secrets.choice(messages)
 
     # Call notify.py (make sure it's named/located correctly)
     notify_script = os.path.join(base, "notify.py")

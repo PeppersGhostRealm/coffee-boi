@@ -2,76 +2,76 @@
 import sys
 import os
 import json
-import random
+import secrets
 from PyQt5 import QtWidgets
+from show_transparent import TransparentPopup
 
-# -- Configuration --
-# Resources directory (where images.json and image files live)
-RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
-# Path to JSON file listing image paths (one array of strings)
-CONFIG_FILE = os.path.join(RESOURCES_DIR, 'images.json')
-
-# Ensure the show_transparent script is in the same directory
-# and named show_transparent.py
-script_dir = os.path.dirname(os.path.abspath(__file__))
-if script_dir not in sys.path:
-    sys.path.insert(0, script_dir)
-
-try:
-    from show_transparent import TransparentPopup
-except ImportError:
-    print("Error: Could not import TransparentPopup. Make sure 'show_transparent.py' exists in the same directory.")
-    sys.exit(1)
+# ── Paths ─────────────────────────────────────────────────────────────────────
+BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
+RESOURCES    = os.path.join(BASE_DIR, 'resources')
+CONFIG_FILE  = os.path.join(RESOURCES, 'config.json')
+IMAGES_FILE  = os.path.join(RESOURCES, 'images.json')
 
 
-def load_image_list(config_path):
-    if not os.path.exists(config_path):
-        print(f"Error: Config file not found: {config_path}")
+# ── Helpers ────────────────────────────────────────────────────────────────────
+def load_json(path, description):
+    if not os.path.isfile(path):
+        print(f"Error: {description} not found at {path}")
         sys.exit(1)
     try:
-        with open(config_path, 'r') as f:
-            data = json.load(f)
-    except (ValueError, json.JSONDecodeError) as e:
-        print(f"Error: Failed to parse JSON: {e}")
+        with open(path, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error: Failed to parse {description}: {e}")
         sys.exit(1)
 
-    if not isinstance(data, list) or not all(isinstance(p, str) for p in data):
-        print("Error: JSON must be an array of image-path strings.")
-        sys.exit(1)
-    return data
+def resolve_path(fn):
+    return fn if os.path.isabs(fn) else os.path.join(RESOURCES, fn)
 
-
-def resolve_path(image_path):
-    # If path is absolute, use it; otherwise, look inside resources directory
-    if os.path.isabs(image_path):
-        return image_path
-    return os.path.join(RESOURCES_DIR, image_path)
-
-
-def choose_image(images):
+def choose_image_entry(images):
     if not images:
-        print("Error: No images in list.")
+        print("Error: no images defined")
         sys.exit(1)
-    choice = random.choice(images)
-    full_path = resolve_path(choice)
-    if not os.path.exists(full_path):
-        print(f"Error: Selected image does not exist: {full_path}")
+    # use secrets.choice for cryptographically strong randomness
+    entry = secrets.choice(images)
+    if 'filename' not in entry:
+        print("Error: each image entry must have a 'filename' field")
         sys.exit(1)
-    return full_path
+    full = resolve_path(entry['filename'])
+    if not os.path.exists(full):
+        print(f"Error: image not found: {full}")
+        sys.exit(1)
+    return entry, full
 
 
+# ── Main ───────────────────────────────────────────────────────────────────────
 def main():
-    config_path = CONFIG_FILE
-    if len(sys.argv) > 1:
-        # allow overriding config path via arg, still relative to resources if not absolute
-        arg_path = sys.argv[1]
-        config_path = arg_path if os.path.isabs(arg_path) else os.path.join(RESOURCES_DIR, arg_path)
-
-    image_list = load_image_list(config_path)
-    img_path = choose_image(image_list)
-
-    app = QtWidgets.QApplication(sys.argv)
-    popup = TransparentPopup(img_path)
+    # 1) load global display settings
+    cfg = load_json(CONFIG_FILE, 'config.json')
+    fade       = cfg.get('fade', 100)
+    display_ms = cfg.get('display', 1000)
+    max_h      = cfg.get('max_height', 0.25)
+    anchor     = cfg.get('anchor', 'bottom-right')
+    
+    # 2) load per-image list
+    images = load_json(IMAGES_FILE, 'images.json')
+    entry, img_path = choose_image_entry(images)
+    
+    # 3) pull per-image margins (defaults to 0)
+    margin_x = entry.get('margin_x', 0)
+    margin_y = entry.get('margin_y', 0)
+    
+    # 4) fire up Qt and show
+    app   = QtWidgets.QApplication(sys.argv)
+    popup = TransparentPopup(
+        img_path,
+        fade=fade,
+        display=display_ms,
+        max_height=max_h,
+        anchor=anchor,
+        margin_x=margin_x,
+        margin_y=margin_y
+    )
     popup.show()
     popup.fade_in()
     sys.exit(app.exec_())

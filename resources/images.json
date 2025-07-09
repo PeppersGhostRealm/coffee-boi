@@ -1,5 +1,22 @@
 [
-  "coffeeboi.png",
-  "coffeeboi2.png",
-  "coffeeboi3.png"
+  {
+    "filename": "coffeeboi.png",
+    "margin_x": 1000,
+    "margin_y": 0
+  },
+  {
+    "filename": "coffeeboi2.png",
+    "margin_x": 1000,
+    "margin_y": 0
+  },
+  {
+    "filename": "coffeeboi3.png",
+    "margin_x": 1000,
+    "margin_y": -56
+  },
+  {
+    "filename": "coffeeboi4.png",
+    "margin_x": 1000,
+    "margin_y": -40
+  }
 ]

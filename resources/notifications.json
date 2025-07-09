@@ -1,16 +1,29 @@
 {
   "titles": [
-    "Hydration Time",
-    "Stretch Break",
-    "Mindful Moment",
-    "Coffee Break",
-    "Stand Up"
+    "Coffee Alert!",
+    "Time for a sip?",
+    "Don't forget!",
+    "Did you forget?...",
+    "Time to warm up?",
+    "Coffe break!",
+    "Don't forget me",
+    "Steam Up!",
+    "Your cup misses you",
+    "I'm here!"
   ],
   "messages": [
-    "Drink a glass of water to stay hydrated.",
-    "Take a moment to stretch your legs.",
-    "Pause and take three deep breaths.",
-    "Time to grab a cup of coffee.",
-    "Stand up and move around for a bit."
+    "I'm feeling lonely over here... take a sip? 🥺",
+    "Your look like you need a boost—some coffe before it gets cold?",
+    "Don't let my steam disappear...",
+    "A little sip would make my whole day brighter",
+    "Your cup's gone chilly and it's breaking my heart 🥺",
+    "Take a sip soon, before it gets cold!",
+    "Your coffee's ready to warm you up",
+    "You deserve a moment of warmth—take a sip?",
+    "You've been apart from your mug for too long—reunite with a sip?",
+    "Your coffee misses you",
+    "Don't ghost me—your steam's about to vanish!",
+    "Life's too short for cold coffee",
+    "Take a pause—give your coffee some love"
   ]
 }
