@@ -6,12 +6,13 @@ import random
 from PyQt5 import QtWidgets
 
 # -- Configuration --
+# Resources directory (where images.json and image files live)
+RESOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
 # Path to JSON file listing image paths (one array of strings)
-CONFIG_FILE = "images.json"
+CONFIG_FILE = os.path.join(RESOURCES_DIR, 'images.json')
 
 # Ensure the show_transparent script is in the same directory
 # and named show_transparent.py
-# Add script directory to sys.path so we can import it
 script_dir = os.path.dirname(os.path.abspath(__file__))
 if script_dir not in sys.path:
     sys.path.insert(0, script_dir)
@@ -40,21 +41,31 @@ def load_image_list(config_path):
     return data
 
 
+def resolve_path(image_path):
+    # If path is absolute, use it; otherwise, look inside resources directory
+    if os.path.isabs(image_path):
+        return image_path
+    return os.path.join(RESOURCES_DIR, image_path)
+
+
 def choose_image(images):
     if not images:
         print("Error: No images in list.")
         sys.exit(1)
     choice = random.choice(images)
-    if not os.path.exists(choice):
-        print(f"Error: Selected image does not exist: {choice}")
+    full_path = resolve_path(choice)
+    if not os.path.exists(full_path):
+        print(f"Error: Selected image does not exist: {full_path}")
         sys.exit(1)
-    return choice
+    return full_path
 
 
 def main():
     config_path = CONFIG_FILE
     if len(sys.argv) > 1:
-        config_path = sys.argv[1]
+        # allow overriding config path via arg, still relative to resources if not absolute
+        arg_path = sys.argv[1]
+        config_path = arg_path if os.path.isabs(arg_path) else os.path.join(RESOURCES_DIR, arg_path)
 
     image_list = load_image_list(config_path)
     img_path = choose_image(image_list)
