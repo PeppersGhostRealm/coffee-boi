@@ -9,22 +9,20 @@ FADE_TIME_MS = 500       # Fade-in/out duration in milliseconds
 DISPLAY_TIME_MS = 5000   # Time to display fully opaque before fading out
 
 # Position configuration
-# - Set ANCHOR to one of: None, 'bottom-right', 'bottom-left', 'top-right', 'top-left'
-# - If ANCHOR is None, POSITION_X/Y will be used (None for centering)
 ANCHOR = 'bottom-right'
-MARGIN_X = 400           # Margin in pixels from the screen edge when anchoring
+MARGIN_X = 400
 MARGIN_Y = 0
-
-POSITION_X = None        # X coordinate of top-left corner, or None to center horizontally
-POSITION_Y = None        # Y coordinate of top-left corner, or None to center vertically
+POSITION_X = None
+POSITION_Y = None
 
 class TransparentPopup(QtWidgets.QWidget):
     def __init__(self, image_path):
         super().__init__()
-        # Frameless, no taskbar icon
+        # Add WindowStaysOnTopHint to ensure always-on-top behavior
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint
             | QtCore.Qt.Tool
+            | QtCore.Qt.WindowStaysOnTopHint
         )
         # Enable per-pixel transparency
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -64,7 +62,9 @@ class TransparentPopup(QtWidgets.QWidget):
 
     def showEvent(self, event):
         super().showEvent(event)
-        # On Windows, ensure the popup is above all windows except the taskbar
+        # Raise and activate window, then ensure it's above all others
+        self.raise_()
+        self.activateWindow()
         if sys.platform.startswith('win'):
             self._place_under_taskbar()
 
@@ -74,36 +74,33 @@ class TransparentPopup(QtWidgets.QWidget):
         SWP_NOMOVE = 0x0002
         SWP_NOSIZE = 0x0001
         SWP_NOACTIVATE = 0x0010
+        SWP_SHOWWINDOW = 0x0040
         HWND_TOPMOST = -1
 
         hwnd = int(self.winId())
-        # Make our window topmost
+        # Make our window topmost and show it
         SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW)
         # Then re-assert taskbar above our window
         taskbar = user32.FindWindowW("Shell_TrayWnd", None)
         if taskbar:
             SetWindowPos(taskbar, HWND_TOPMOST, 0, 0, 0, 0,
-                         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
+                         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW)
 
     def fade_in(self):
-        # Animate from transparent to opaque
         self.anim.stop()
         self.setWindowOpacity(0.0)
         self.anim.setStartValue(0.0)
         self.anim.setEndValue(1.0)
         self.anim.start()
-        # After fade-in and display time, start fade-out
         total_delay = FADE_TIME_MS + DISPLAY_TIME_MS
         QtCore.QTimer.singleShot(total_delay, self.fade_out)
 
     def fade_out(self):
-        # Animate from opaque to transparent
         self.anim.stop()
         self.anim.setStartValue(1.0)
         self.anim.setEndValue(0.0)
         self.anim.start()
-        # Quit after fade-out completes
         QtCore.QTimer.singleShot(FADE_TIME_MS, QtWidgets.QApplication.instance().quit)
 
 if __name__ == "__main__":

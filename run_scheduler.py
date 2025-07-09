@@ -60,7 +60,7 @@ def on_exit(icon, item):
 def create_tray_icon():
     """Set up system tray icon with an Exit menu."""
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    icon_path = os.path.join(script_dir, "icon.ico")
+    icon_path = os.path.join(script_dir, "resources/icon.ico")
     if not os.path.exists(icon_path):
         # Fallback: generate a simple blank image
         img = Image.new("RGB", (64, 64), color=(0, 0, 0))
@@ -68,7 +68,7 @@ def create_tray_icon():
         img = Image.open(icon_path)
 
     menu = pystray.Menu(pystray.MenuItem("Exit", on_exit))
-    tray = pystray.Icon("Scheduler", img, "Runner", menu)
+    tray = pystray.Icon("Scheduler", img, "CoffeeBoi", menu)
     return tray
 
 
